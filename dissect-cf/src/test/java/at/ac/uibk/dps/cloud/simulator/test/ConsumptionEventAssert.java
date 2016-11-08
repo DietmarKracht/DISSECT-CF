@@ -51,6 +51,7 @@ public class ConsumptionEventAssert extends ConsumptionEventAdapter {
 
 	public ConsumptionEventAssert(final boolean failOnCancel) {
 		this(-1L, failOnCancel);
+		
 	}
 
 	public ConsumptionEventAssert(final long expectedTime) {
