@@ -1,27 +1,28 @@
 package com.paluno.clemens;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.Map;
 
+import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.PowerStateKind;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.State;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
-import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
 
 public class PMTest {
-	public final static int pmcount = 10;
-	public static PhysicalMachine[] pms= new PhysicalMachine[pmcount];
+	private int repoID = 0;
 
-	public static void main(String[] args)
-			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException {
-		for (int i = 0; i < pmcount; i++) {
-			pms[i] = new PhysicalMachine(2, 2500, 4000,
-					new Repository(1000, "" + i, 10000, 10000, 1000, new HashMap<String, Integer>()), new double[] {},
-					new double[] {}, PowerTransitionGenerator.generateTransitions(100, 110, 500, 50, 50));
-		}
-		
-		for(int i=0;i<pms.length;i++){
-			pms[i].turnon();
-			System.out.println(Arrays.toString(pms));
-		}
+	private PhysicalMachine createPM(double perCorePocessing, double[] turnonOperations, double[] switchoffOperations,
+			EnumMap<PowerStateKind, EnumMap<State, PowerState>> powerTransitions) {
+		Repository repo = createNewDisk(1000L, 1000L, 1024l * 1024 * 1024, null);
+		return new PhysicalMachine(Constants.PMCores, perCorePocessing, Constants.PMram, repo, switchoffOperations,
+				switchoffOperations, powerTransitions);
+
 	}
+
+	private Repository createNewDisk(long maxInBW, long maxOutBW, long diskBW, Map<String, Integer> latencyMap) {
+		return new Repository(Constants.PMStorage, "" + repoID++ + "-repo", maxInBW, maxOutBW, diskBW, latencyMap);
+
+	}
+
 }
