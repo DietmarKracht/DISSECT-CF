@@ -24,11 +24,6 @@
  */
 package at.ac.uibk.dps.cloud.simulator.test.simple;
 
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
-import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
-
 import java.io.File;
 import java.io.RandomAccessFile;
 
@@ -36,6 +31,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.uibk.dps.cloud.simulator.test.TestFoundation;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
+import hu.mta.sztaki.lpds.cloud.simulator.util.CloudLoader;
 
 public class UtilTest extends TestFoundation {
 	public String cloudDef = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

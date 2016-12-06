@@ -25,15 +25,15 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.energy.specialized;
 
+import java.util.Arrays;
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.energy.AggregatedEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.DirectEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.EnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Allows to energy meter all resource spreaders (e.g. CPU, Network) associated

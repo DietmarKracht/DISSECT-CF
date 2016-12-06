@@ -24,12 +24,12 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.util;
 
+import java.util.EnumMap;
+
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.ConstantConsumptionModel;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.LinearConsumptionModel;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-
-import java.util.EnumMap;
 
 /**
  * This helper class provides a simple way to generate the necessary power

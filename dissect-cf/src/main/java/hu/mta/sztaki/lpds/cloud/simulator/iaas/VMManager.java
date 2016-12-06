@@ -25,14 +25,14 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.iaas;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * This interface intends to provide a generic overview of the VM management

@@ -24,18 +24,17 @@
  */
 package at.ac.uibk.dps.cloud.simulator.test.simple.cloud;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.uibk.dps.cloud.simulator.test.IaaSRelatedFoundation;
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.ResourceAllocation;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import at.ac.uibk.dps.cloud.simulator.test.IaaSRelatedFoundation;
 
 public class UnderProvisionTest extends IaaSRelatedFoundation {
 	public static final int smallDivider = 10;

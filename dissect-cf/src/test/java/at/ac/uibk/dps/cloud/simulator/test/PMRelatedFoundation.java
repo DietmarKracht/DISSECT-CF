@@ -25,11 +25,6 @@
 
 package at.ac.uibk.dps.cloud.simulator.test;
 
-import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
-import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -38,6 +33,11 @@ import java.util.EnumMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
+import hu.mta.sztaki.lpds.cloud.simulator.util.PowerTransitionGenerator;
 
 public class PMRelatedFoundation extends ConsumptionEventFoundation {
 	public final static PrintStream realStdOut = System.out;

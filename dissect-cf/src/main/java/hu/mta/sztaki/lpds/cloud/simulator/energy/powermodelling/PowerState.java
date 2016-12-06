@@ -24,10 +24,10 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling;
 
-import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 
 /**
  * Represents a particular power state of a resource spreader

@@ -25,6 +25,11 @@
 
 package at.ac.uibk.dps.cloud.simulator.test.simple.cloud.pmscheduler;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import at.ac.uibk.dps.cloud.simulator.test.IaaSRelatedFoundation;
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
@@ -34,12 +39,6 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.NonQueueingScheduler
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import at.ac.uibk.dps.cloud.simulator.test.IaaSRelatedFoundation;
 
 public class AlwaysOnMachinesTest extends IaaSRelatedFoundation {
 	IaaSService basic;

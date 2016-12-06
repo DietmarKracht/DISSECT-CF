@@ -23,9 +23,9 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.pmiterators;
 
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-
 import java.util.List;
+
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 
 /**
  * This iterator alters the restart operator so it no longer resets the pointer

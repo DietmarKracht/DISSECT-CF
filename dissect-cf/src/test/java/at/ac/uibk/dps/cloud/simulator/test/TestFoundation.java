@@ -25,9 +25,9 @@
 
 package at.ac.uibk.dps.cloud.simulator.test;
 
-import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-
 import org.junit.Before;
+
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 
 public class TestFoundation {
 	public static final long aSecond = 1000; // in ms

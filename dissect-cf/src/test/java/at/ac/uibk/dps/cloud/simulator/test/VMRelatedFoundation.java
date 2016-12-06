@@ -25,10 +25,10 @@
 
 package at.ac.uibk.dps.cloud.simulator.test;
 
+import org.junit.BeforeClass;
+
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
-
-import org.junit.BeforeClass;
 
 public class VMRelatedFoundation extends PMRelatedFoundation {
 	@BeforeClass

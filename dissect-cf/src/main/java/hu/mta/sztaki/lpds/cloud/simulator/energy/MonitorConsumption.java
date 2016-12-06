@@ -25,10 +25,10 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.energy;
 
+import java.util.PriorityQueue;
+
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceSpreader;
-
-import java.util.PriorityQueue;
 
 /**
  * This class is an initial framework to collect periodical reports on

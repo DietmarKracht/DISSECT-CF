@@ -25,12 +25,12 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.io;
 
+import java.util.Map;
+
 import hu.mta.sztaki.lpds.cloud.simulator.DeferredEvent;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.MaxMinConsumer;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.MaxMinProvider;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
-
-import java.util.Map;
 
 /**
  * This class represents a networked element in the system. The class also

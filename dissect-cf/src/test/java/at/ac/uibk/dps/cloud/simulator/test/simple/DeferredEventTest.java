@@ -25,15 +25,14 @@
 
 package at.ac.uibk.dps.cloud.simulator.test.simple;
 
-import hu.mta.sztaki.lpds.cloud.simulator.DeferredEvent;
-import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
-
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import at.ac.uibk.dps.cloud.simulator.test.TestFoundation;
+import hu.mta.sztaki.lpds.cloud.simulator.DeferredEvent;
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
+import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
 
 public class DeferredEventTest extends TestFoundation {
 	final static int limit = 5000;

@@ -24,6 +24,9 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling;
 
+import java.util.HashMap;
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.DeferredEvent;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
@@ -35,9 +38,6 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.AlterableResourceCons
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.Scheduler;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
-
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * A reactive PM controller that increases/decreases the powered on pm set on

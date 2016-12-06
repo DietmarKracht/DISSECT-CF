@@ -25,12 +25,6 @@
 
 package at.ac.uibk.dps.cloud.simulator.test.simple.cloud;
 
-import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
-import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
-import hu.mta.sztaki.lpds.cloud.simulator.io.StorageObject;
-import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
-
 import java.util.HashMap;
 
 import org.junit.Assert;
@@ -39,6 +33,11 @@ import org.junit.Test;
 
 import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventAssert;
 import at.ac.uibk.dps.cloud.simulator.test.ConsumptionEventFoundation;
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
+import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
+import hu.mta.sztaki.lpds.cloud.simulator.io.StorageObject;
+import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
 
 public class RepositoryTest extends ConsumptionEventFoundation {
 	public final static long storageCapacity = 5000000000000L;

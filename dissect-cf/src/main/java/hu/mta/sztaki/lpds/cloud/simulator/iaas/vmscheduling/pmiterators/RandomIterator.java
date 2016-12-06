@@ -23,10 +23,10 @@
  */
 package hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.pmiterators;
 
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
-
-import java.util.List;
 
 /**
  * The user of the iterator will not know the order in which the PMs are

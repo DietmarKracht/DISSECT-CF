@@ -25,14 +25,13 @@
 
 package at.ac.uibk.dps.cloud.simulator.test.simple;
 
-import hu.mta.sztaki.lpds.cloud.simulator.Timed;
-
 import java.util.ArrayList;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import at.ac.uibk.dps.cloud.simulator.test.TestFoundation;
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 
 public class TimedTest extends TestFoundation {
 	final static long setFrequency = 20;

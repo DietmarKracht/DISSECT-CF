@@ -25,13 +25,13 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling;
 
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.Scheduler.QueueingEvent;
-
-import java.util.List;
 
 /**
  * This PM controller ensures that all newly registered PMs are switched on

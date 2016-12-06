@@ -25,16 +25,16 @@
 
 package hu.mta.sztaki.lpds.cloud.simulator.energy.specialized;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import hu.mta.sztaki.lpds.cloud.simulator.energy.AggregatedEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.EnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Allows a complete IaaS system to be monitored energywise with single energy
