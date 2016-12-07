@@ -1,16 +1,21 @@
 package com.paluno.clemens;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map;
 
 import com.paluno.clemens.power.CustomPowerTransitionGenerator;
 
+import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.PowerStateKind;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.State;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.PhysicalMachineController;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
 
@@ -35,23 +40,30 @@ public class PMTest {
 	
 
 	private static IaaSService createCloud()
-			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException {
+			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
+		final IaaSService s = new IaaSService(FirstFitScheduler.class, AlwaysOnMachines.class);
 		for (int i = 0; i < Constants.PMcount; i++) {
-			pms.add(createPM(Constants.PMMips[i % 2], new double[] {}, new double[] {}, CustomPowerTransitionGenerator
-					.generateTransitions(100, 110, 500, 1000000000, 1000000000, Constants.models[i % 2])));
-
+			PhysicalMachine pm = createPM(Constants.PMMips[i % 2], new double[] {}, new double[] {}, CustomPowerTransitionGenerator
+					.generateTransitions(0, 0, 500, 1000000000, 1000000000, Constants.models[i % 2]));
+			s.registerHost(pm);
+			pms.add(pm);
 		}
-		return null;
+		return s;
 	}
 
 	public static void main(String[] args)
-			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException {
+			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
 
-		IaaSService iaas = createCloud();
+		final IaaSService iaas = createCloud();
 		for (PhysicalMachine pm : pms) {
+			
 			pm.turnon();
+			
+			
 
 		}
+		
+		Timed.simulateUntilLastEvent();
 
 	}
 
