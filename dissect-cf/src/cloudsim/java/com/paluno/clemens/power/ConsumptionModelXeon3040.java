@@ -2,7 +2,7 @@ package com.paluno.clemens.power;
 
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 
-public class ConsumptionModelXeon3040 extends PowerState.ConsumptionModel {
+public class ConsumptionModelXeon3040 extends PowerState.ConsumptionModel implements PowerConsuming{
 	private final double[] power = { 86, 89.4, 92.6, 96, 99.5, 102, 106, 108, 112, 114, 117 };
 
 	@Override
@@ -11,4 +11,11 @@ public class ConsumptionModelXeon3040 extends PowerState.ConsumptionModel {
 		return power[(int) (load * 10)];
 	}
 
+	public double idlePower() {
+		return evaluateConsumption(0);
+	}
+
+	public double maxPower() {
+		return evaluateConsumption(1);
+	}
 }

@@ -811,7 +811,7 @@ public class PhysicalMachine extends MaxMinProvider implements VMManager<Physica
 	public PhysicalMachine(double cores, double perCorePocessing, long memory, Repository disk,
 			double[] turnonOperations, double[] switchoffOperations,
 			EnumMap<PowerStateKind, EnumMap<State, PowerState>> powerTransitions) {
-		super(cores * perCorePocessing);
+		super(cores * perCorePocessing);//ResourceSpreader.setPerTickProcessingPower 
 		// Init resources:
 		totalCapacities = new ConstantConstraints(cores, perCorePocessing, memory);
 		internalAvailableCaps = new AlterableResourceConstraints(totalCapacities);
