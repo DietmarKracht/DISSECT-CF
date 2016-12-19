@@ -11,10 +11,15 @@ import com.paluno.clemens.power.CustomPowerTransitionGenerator;
 import com.paluno.clemens.power.PowerConsuming;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
+import hu.mta.sztaki.lpds.cloud.simulator.energy.EnergyMeter;
+import hu.mta.sztaki.lpds.cloud.simulator.energy.MonitorConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
+import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.PhysicalMachineEnergyMeter;
+import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.SimpleVMEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.PowerStateKind;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.ResourceAllocation;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.State;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
@@ -22,6 +27,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
@@ -32,7 +38,7 @@ public class PMTest {
 	// ID for every PMs Disk, increasing
 	private static int repoID = 0;
 	// Image for every VM
-	private static VirtualAppliance va = new VirtualAppliance("va", 0, 0, false, 1l);
+	private static VirtualAppliance va = new VirtualAppliance("va", 0, 0, false, 2500l * 1024 * 1024);
 	// Global List of all PMs
 	private static ArrayList<PhysicalMachine> pms = new ArrayList<PhysicalMachine>();
 	private static ArrayList<VirtualMachine> vms = new ArrayList<VirtualMachine>();
@@ -102,7 +108,8 @@ public class PMTest {
 		//
 		// Timed.simulateUntilLastEvent();
 		long start = System.currentTimeMillis();
-		ResourceConstraints vmreq = new ConstantConstraints(Constants.VMCores, Constants.VMMips, Constants.VMram);
+		ResourceConstraints vmreq = new ConstantConstraints(Constants.VMCores[0], Constants.VMMIPS[3],
+				Constants.VMRAM[0]);
 		Repository storage = new Repository(1l * 1024 * 1024 * 1024, "repo", 1000l, 1000l, 1l * 1024 * 1024, null);
 		storage.registerObject(va);
 		IaaSService s = new IaaSService(FirstFitScheduler.class, AlwaysOnMachines.class);
@@ -113,17 +120,26 @@ public class PMTest {
 						((PowerConsuming) Constants.models[0]).maxPower(), Double.MAX_VALUE, Double.MAX_VALUE,
 						Constants.models[0].getClass()));
 		preparePM();
+
 		s.registerHost(pm);
-//		pm.turnon();
-		VirtualMachine vm = pm.requestVM((VirtualAppliance)pm.localDisk.contents().iterator().next(), vmreq, pm.localDisk, 1)[0];
 
+		VirtualMachine vm = pm.requestVM((VirtualAppliance) pm.localDisk.contents().iterator().next(), vmreq,
+				pm.localDisk, 1)[0];
+		EnergyMeter m = new SimpleVMEnergyMeter(vm);
+		PhysicalMachineEnergyMeter pe = new PhysicalMachineEnergyMeter(pm);
+		pe.startMeter(1, true);
+		m.startMeter(1, true);
+
+		// Timed.simulateUntilLastEvent();
+		long task = Timed.getFireCount();
+		vm.newComputeTask(10, ResourceConsumption.unlimitedProcessing, new ConsumptionEventAdapter());
 		Timed.simulateUntilLastEvent();
 
-		System.out.println(vm);
-		vm.newComputeTask(1000000000000l, 50, new ConsumptionEventAdapter());
-
-		Timed.simulateUntilLastEvent();
+		System.out.println("Took the simulator " + (Timed.getFireCount() - task) + " time units to finish task");
 		System.out.println("Finished run in " + (System.currentTimeMillis() - start) + " ms");
+
+		m.stopMeter();
+		System.exit(0);
 
 	}
 
@@ -135,7 +151,7 @@ public class PMTest {
 	private static void preparePM() {
 		registerVA(pm);
 		pm.turnon();
-		Timed.simulateUntilLastEvent();
+		// Timed.simulateUntilLastEvent();
 	}
 
 	private static int vmCount(String inputFolderName) {
