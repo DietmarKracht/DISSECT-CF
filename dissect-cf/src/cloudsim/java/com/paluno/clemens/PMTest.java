@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map;
 
+import javax.naming.TimeLimitExceededException;
+
 import com.paluno.clemens.power.ConsumptionModelXeon3040;
 import com.paluno.clemens.power.CustomPowerTransitionGenerator;
 import com.paluno.clemens.power.PowerConsuming;
@@ -26,6 +28,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.SchedulingDependentMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
@@ -62,7 +65,7 @@ public class PMTest {
 	private static IaaSService createCloud() throws SecurityException, InstantiationException, IllegalAccessException,
 			NoSuchFieldException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
 		// globalStorage.registerObject(va);
-		final IaaSService s = new IaaSService(FirstFitScheduler.class, AlwaysOnMachines.class);
+		final IaaSService s = new IaaSService(FirstFitScheduler.class, SchedulingDependentMachines.class);
 		for (int i = 0; i < Constants.PMcount; i++) {
 			PhysicalMachine pm = createPM(Constants.PMMips[i % 2],
 					CustomPowerTransitionGenerator.generateTransitions(0,
@@ -108,7 +111,7 @@ public class PMTest {
 		//
 		// Timed.simulateUntilLastEvent();
 		long start = System.currentTimeMillis();
-		ResourceConstraints vmreq = new ConstantConstraints(Constants.VMCores[0], Constants.VMMIPS[3],
+		ResourceConstraints vmreq = new ConstantConstraints(Constants.VMCores[0], Constants.VMMIPS[1],
 				Constants.VMRAM[0]);
 		Repository storage = new Repository(1l * 1024 * 1024 * 1024, "repo", 1000l, 1000l, 1l * 1024 * 1024, null);
 		storage.registerObject(va);
@@ -125,20 +128,25 @@ public class PMTest {
 
 		VirtualMachine vm = pm.requestVM((VirtualAppliance) pm.localDisk.contents().iterator().next(), vmreq,
 				pm.localDisk, 1)[0];
-		EnergyMeter m = new SimpleVMEnergyMeter(vm);
+//		VirtualMachine vm2 = pm.requestVM((VirtualAppliance) pm.localDisk.contents().iterator().next(), vmreq,
+//				pm.localDisk, 1)[0];
+//		EnergyMeter m = new SimpleVMEnergyMeter(vm);
 		PhysicalMachineEnergyMeter pe = new PhysicalMachineEnergyMeter(pm);
 		pe.startMeter(1, true);
-		m.startMeter(1, true);
+		
+		// m.startMeter(1, true);
 
-		// Timed.simulateUntilLastEvent();
+//		 Timed.simulateUntilLastEvent();
 		long task = Timed.getFireCount();
-		vm.newComputeTask(10, ResourceConsumption.unlimitedProcessing, new ConsumptionEventAdapter());
+		vm.newComputeTask(1000, vm.getPerTickProcessingPower()/2, new ConsumptionEventAdapter());
+//		vm2.newComputeTask(10, ResourceConsumption.unlimitedProcessing, new ConsumptionEventAdapter());
 		Timed.simulateUntilLastEvent();
+		;
 
 		System.out.println("Took the simulator " + (Timed.getFireCount() - task) + " time units to finish task");
 		System.out.println("Finished run in " + (System.currentTimeMillis() - start) + " ms");
-
-		m.stopMeter();
+//		m.stopMeter();
+		pe.stopMeter();
 		System.exit(0);
 
 	}
@@ -154,10 +162,6 @@ public class PMTest {
 		// Timed.simulateUntilLastEvent();
 	}
 
-	private static int vmCount(String inputFolderName) {
-		File inputFolder = new File(inputFolderName);
-		File[] files = inputFolder.listFiles();
-		return files.length;
-	}
+	
 
 }
