@@ -160,6 +160,7 @@ public class PowerState {
 		if (load > 1.01 || load < -0.01) {
 			throw new IllegalStateException("Received an out of range load evaluation request:" + load);
 		}
+		
 		return model.evaluateConsumption(load);
 	}
 

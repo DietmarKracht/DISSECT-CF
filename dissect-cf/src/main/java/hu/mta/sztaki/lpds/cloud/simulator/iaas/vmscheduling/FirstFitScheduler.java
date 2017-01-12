@@ -115,6 +115,7 @@ public class FirstFitScheduler extends Scheduler {
 			int vmNum = 0;
 			while (queue.size() > 0 && processableRequest) {
 				request = queue.get(0);
+				
 				vmNum = 0;
 				do {
 					processableRequest = false;

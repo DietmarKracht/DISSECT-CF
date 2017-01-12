@@ -9,6 +9,8 @@ import hu.mta.sztaki.lpds.cloud.simulator.energy.powermodelling.PowerState;
 
 public class Constants {
 
+	public static final double staticThreshold = 0.8;
+
 	public static final int PMCores = 2;
 
 	public static final long PMram = 4096l * 1024 * 1024;// 4Gb
@@ -29,8 +31,7 @@ public class Constants {
 
 	public static final String inputfolder = Simulation.class.getClassLoader().getResource("workload/planetlab")
 			.getPath() + "/20110303";
-	
-	
+
 	public static final int VMcount = vmCount(inputfolder);// vmCount(inputfolder)
 
 	public static PowerState.ConsumptionModel[] models = { new ConsumptionModelXeon3040(),

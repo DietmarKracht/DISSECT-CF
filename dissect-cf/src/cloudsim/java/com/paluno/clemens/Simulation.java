@@ -3,12 +3,13 @@ package com.paluno.clemens;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.paluno.clemens.power.CustomPowerTransitionGenerator;
 import com.paluno.clemens.power.PowerConsuming;
-import com.paluno.clemens.scheduler.Beloglazov;
-import com.paluno.clemens.scheduler.Guazzone;
+import com.paluno.clemens.scheduler.BeloglazovScheduler;
+import com.paluno.clemens.scheduler.GuazzoneScheduler;
 
 import hu.mta.sztaki.lpds.cloud.simulator.Timed;
 import hu.mta.sztaki.lpds.cloud.simulator.energy.EnergyMeter;
@@ -65,7 +66,7 @@ public class Simulation {
 	public void startSimulation()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException, NoSuchFieldException, VMManagementException, NetworkException {
-		
+
 		reset();
 		IaaSService s = createIaaS(true);
 		EnergyMeter em = new IaaSEnergyMeter(s);
@@ -77,9 +78,10 @@ public class Simulation {
 		VirtualAppliance va = (VirtualAppliance) r.contents().iterator().next();
 		ResourceConstraints[] rc = createConstraints(vmTypes);
 		VirtualMachine[] vms = requestVMs(va, rc, r, s, Constants.VMcount);
-		ResourceConsumption cons = new ResourceConsumption(10, 1000, pms.get(0).directConsumer, pms.get(0).directConsumer,
+		ResourceConsumption cons = new ResourceConsumption(10, 1000, pms.get(0).directConsumer, pms.get(0),
 				new ConsumptionEventAdapter());
 		cons.registerConsumption();
+
 		for (VirtualMachine vm : vms) {
 			vm.newComputeTask(1000, vm.getPerTickProcessingPower(), new ConsumptionEventAdapter());
 		}
@@ -105,10 +107,19 @@ public class Simulation {
 			Repository repository, IaaSService iaas, int count) throws VMManagementException, NetworkException {
 		VirtualMachine[] out = new VirtualMachine[count];
 		for (int i = 0; i < out.length; i++) {
-//			System.out.println("Currently requesting VM No. "+i);
+			// System.out.println("Currently requesting VM No. "+i);
 			out[i] = iaas.requestVM(virtualAppliance, resourceConstraints[i % vmTypes], repository, 1)[0];
 		}
 		return out;
+	}
+
+	private List<VirtualMachine> createInitialVMs(int count, ResourceConstraints[] rc, Repository repo,
+			VirtualAppliance va) {
+		List out = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			out.add(new VirtualMachine(va));
+		}
+		return null;
 	}
 
 	/**
@@ -127,7 +138,12 @@ public class Simulation {
 	public IaaSService createIaaS(boolean flag) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		log.info("Creates IaaS");
-		return new IaaSService(flag == true ? Beloglazov.class : Guazzone.class, MultiPMController.class);
+		return new IaaSService(flag == true ? BeloglazovScheduler.class : GuazzoneScheduler.class,
+				MultiPMController.class);
+	}
+
+	public void initialSetup(List<PhysicalMachine> pms, List<VirtualMachine> vms) {
+
 	}
 
 	/**
@@ -160,7 +176,7 @@ public class Simulation {
 	 */
 	public PhysicalMachine createPM(double perCoreProcessing,
 			EnumMap<PowerStateKind, EnumMap<State, PowerState>> powerTransitions) {
-//		log.info("Creates PM");
+		// log.info("Creates PM");
 		return new PhysicalMachine(Constants.PMCores, perCoreProcessing, Constants.PMram, createRepo(false), 0, 0,
 				powerTransitions);
 	}
@@ -173,7 +189,8 @@ public class Simulation {
 	 * @return
 	 */
 	public Repository createRepo(boolean withVA) {
-//		log.info("Creates Repository " + (withVA == true ? "with Virtual Appliance" : "without Virtual Appliance"));
+		// log.info("Creates Repository " + (withVA == true ? "with Virtual
+		// Appliance" : "without Virtual Appliance"));
 		Repository out = new Repository(Constants.PMStorage, "R-" + repoID++, 1L * 1024, 1L * 1024, 1024L * 1024 * 1024,
 				null);
 		if (withVA) {
@@ -214,8 +231,6 @@ public class Simulation {
 		log.warning("Resetted class");
 		repoID = 0;
 	}
-
-	
 
 	private void simulate() {
 		Timed.simulateUntilLastEvent();

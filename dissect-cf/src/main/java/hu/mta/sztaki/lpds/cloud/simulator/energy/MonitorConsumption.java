@@ -1,6 +1,6 @@
 /*
  *  ========================================================================
- *  DIScrete event baSed Energy Consumption simulaTor 
+q *  DIScrete event baSed Energy Consumption simulaTor 
  *    					             for Clouds and Federations (DISSECT-CF)
  *  ========================================================================
  *  

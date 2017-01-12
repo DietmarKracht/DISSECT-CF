@@ -164,6 +164,7 @@ public class DirectEnergyMeter extends EnergyMeter
 		final double currentProcessingReport = collectProcessingReport();
 		double d =(currentProcessingReport - previousProcessingReport) / maxProcessable;
 		System.out.println(d+" load");
+		
 		increaseTotalConsumption(
 				usedPowerState.getCurrentPower(((currentProcessingReport - previousProcessingReport) / maxProcessable))
 						* (fires - lastMetered));

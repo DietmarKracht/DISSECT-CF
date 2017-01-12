@@ -165,6 +165,7 @@ public abstract class Scheduler {
 				queueListenerManager.notifyListeners(null);
 			}
 		}
+		
 	};
 
 	/**
@@ -228,6 +229,7 @@ public abstract class Scheduler {
 				}
 			}
 		});
+		
 	}
 
 	/**
