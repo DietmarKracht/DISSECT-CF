@@ -97,6 +97,7 @@ public class Simulation {
 				});
 				Timed.simulateUntilLastEvent();
 			}
+		
 		Timed.simulateUntilLastEvent();
 		for (VirtualMachine vm : vms) {
 			vm.destroy(true);

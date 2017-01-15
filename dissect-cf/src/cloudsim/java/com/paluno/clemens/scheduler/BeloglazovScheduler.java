@@ -31,7 +31,8 @@ public class BeloglazovScheduler extends FirstFitScheduler {
 
 	@Override
 	protected ConstantConstraints scheduleQueued() {
-//		System.out.println("Entered Scheduler");
+		super.scheduleQueued();
+		// System.out.println("Entered Scheduler");
 		final PMIterator currIterator = getPMIterator();
 		List<PhysicalMachine> pms = Helper.getList(currIterator);
 
