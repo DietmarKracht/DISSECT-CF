@@ -18,6 +18,7 @@ import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.IaaSEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.PowerStateKind;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.ResourceAllocation;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.State;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
@@ -74,22 +75,34 @@ public class Simulation {
 		ArrayList<PhysicalMachine> pms = createMultiplePMs(Constants.PMcount);
 		s.bulkHostRegistration(pms);
 		s.registerRepository(createRepo(true));
+		Timed.simulateUntilLastEvent();
 		Repository r = s.repositories.get(0);
 		VirtualAppliance va = (VirtualAppliance) r.contents().iterator().next();
 		ResourceConstraints[] rc = createConstraints(vmTypes);
 		VirtualMachine[] vms = requestVMs(va, rc, r, s, Constants.VMcount);
-		ResourceConsumption cons = new ResourceConsumption(10, 1000, pms.get(0).directConsumer, pms.get(0),
-				new ConsumptionEventAdapter());
-		cons.registerConsumption();
-
-		for (VirtualMachine vm : vms) {
-			vm.newComputeTask(1000, vm.getPerTickProcessingPower(), new ConsumptionEventAdapter());
+		Timed.simulateUntilLastEvent();
+		for (PhysicalMachine pm : s.machines) {
+			ResourceConsumption cons = new ResourceConsumption(10, 1000, pm.directConsumer, pm,
+					new ConsumptionEventAdapter());
+			cons.registerConsumption();
 		}
+		for (PhysicalMachine pm : s.machines)
+			for (VirtualMachine vm : pm.listVMs()) {
+				vm.newComputeTask(10, ResourceConsumption.unlimitedProcessing, new ConsumptionEventAdapter() {
+					@Override
+					public void conComplete() {
+						log.info(vm + " completed task");
+						super.conComplete();
+					}
+				});
+				Timed.simulateUntilLastEvent();
+			}
 		Timed.simulateUntilLastEvent();
 		for (VirtualMachine vm : vms) {
 			vm.destroy(true);
 		}
 		Timed.simulateUntilLastEvent();
+
 		log.info("Simulation finished in " + Timed.getFireCount() + " ticks");
 
 	}
@@ -109,17 +122,9 @@ public class Simulation {
 		for (int i = 0; i < out.length; i++) {
 			// System.out.println("Currently requesting VM No. "+i);
 			out[i] = iaas.requestVM(virtualAppliance, resourceConstraints[i % vmTypes], repository, 1)[0];
+			Timed.simulateUntilLastEvent();
 		}
 		return out;
-	}
-
-	private List<VirtualMachine> createInitialVMs(int count, ResourceConstraints[] rc, Repository repo,
-			VirtualAppliance va) {
-		List out = new ArrayList<>();
-		for (int i = 0; i < count; i++) {
-			out.add(new VirtualMachine(va));
-		}
-		return null;
 	}
 
 	/**
@@ -140,10 +145,6 @@ public class Simulation {
 		log.info("Creates IaaS");
 		return new IaaSService(flag == true ? BeloglazovScheduler.class : GuazzoneScheduler.class,
 				MultiPMController.class);
-	}
-
-	public void initialSetup(List<PhysicalMachine> pms, List<VirtualMachine> vms) {
-
 	}
 
 	/**

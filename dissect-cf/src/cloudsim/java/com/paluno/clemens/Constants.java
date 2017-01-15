@@ -17,7 +17,7 @@ public class Constants {
 
 	public static final int PMcount = 800;// 800
 
-	public static final long PMStorage = 1024l * 1024 * 1024; // 1Gb
+	public static final long PMStorage = 1024l * 1024 * 1024*1024; // 1000Gb
 
 	public static final double[] PMMips = { 1.86, 2.66 };
 

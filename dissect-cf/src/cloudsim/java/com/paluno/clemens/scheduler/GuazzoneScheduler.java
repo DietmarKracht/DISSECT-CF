@@ -4,17 +4,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.paluno.clemens.util.Helper;
-
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.FirstFitScheduler;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.QueueingData;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.vmscheduling.pmiterators.PMIterator;
+import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 
-public class GuazzoneScheduler extends FirstFitScheduler {
+public class GuazzoneScheduler extends BeloglazovScheduler {
 
 	public GuazzoneScheduler(IaaSService parent) {
 		super(parent);
@@ -22,31 +18,45 @@ public class GuazzoneScheduler extends FirstFitScheduler {
 	}
 
 	@Override
-	protected ConstantConstraints scheduleQueued() {
-		final PMIterator currIterator = getPMIterator();
-		List<PhysicalMachine> pms = Helper.getList(currIterator);
-		ConstantConstraints returner = new ConstantConstraints(getTotalQueued());
-		// sort the pms
-		Collections.sort(pms, pmComp);
-		QueueingData request = queue.get(0);
-		boolean processable = false;
-		for (VirtualMachine vm : request.queuedVMs) {
-			for (PhysicalMachine pm : pms) {
-				if (pm.localDisk.getFreeStorageCapacity() > vm.getVa().size) {
-
-				} else
-					continue;
+	protected void getNewVMPlacement(List<VirtualMachine> vmsToMigrate, List<PhysicalMachine> pmsToFree,
+			List<PhysicalMachine> totalPms) {
+		Collections.sort(vmsToMigrate, vmComp);
+		for (VirtualMachine vm : vmsToMigrate) {
+			PhysicalMachine allocated = findHostForVM(vm, totalPms, pmsToFree);
+			if (allocated != null) {
+				try {
+					vm.getResourceAllocation().getHost().migrateVM(vm, allocated);
+				} catch (VMManagementException | NetworkException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 
-		return returner;
+	}
+
+	@Override
+	protected PhysicalMachine findHostForVM(VirtualMachine vm, List<PhysicalMachine> totalPms,
+			List<PhysicalMachine> pmsToFree) {
+		List<PhysicalMachine> lph = getPmList();
+		Collections.sort(lph, pmComp);
+		for (PhysicalMachine pm : lph) {
+			if (pmsToFree.contains(pm))
+				continue;
+			if (pm.isHostableRequest(vm.getResourceAllocation().allocated)) {
+				if (isHostOverUtilizedAfterAllocation(pm, vm))
+					continue;
+				return pm;
+			}
+		}
+		return null;
 	}
 
 	/**
 	 * Comparator for sorting like guazzone
 	 * 
 	 */
-	public static final Comparator<PhysicalMachine> pmComp = new Comparator<PhysicalMachine>() {
+	public final Comparator<PhysicalMachine> pmComp = new Comparator<PhysicalMachine>() {
 
 		@Override
 		public int compare(PhysicalMachine a, PhysicalMachine b) {
@@ -78,7 +88,7 @@ public class GuazzoneScheduler extends FirstFitScheduler {
 	 * sorting the VMs by their processing power
 	 * 
 	 */
-	public static final Comparator<VirtualMachine> vmComp = new Comparator<VirtualMachine>() {
+	public final Comparator<VirtualMachine> vmComp = new Comparator<VirtualMachine>() {
 		@Override
 		public int compare(VirtualMachine a, VirtualMachine b) throws ClassCastException {
 			Double aUtilization = a.getPerTickProcessingPower();
