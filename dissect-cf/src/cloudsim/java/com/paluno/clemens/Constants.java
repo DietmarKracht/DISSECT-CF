@@ -13,7 +13,7 @@ public class Constants {
 
 	public static final int PMCores = 2;
 
-	public static final long PMram = 4096l * 1024 * 1024;// 4Gb
+	public static final long PMram = 4096l;// 4Gb
 
 	public static final int PMcount = 800;// 800
 
@@ -24,8 +24,8 @@ public class Constants {
 	public final static int VMTYPES = 4;
 	public final static double[] VMMIPS = { 2.500, 2.000, 1.000, 0.500 };
 	public final static int[] VMCores = { 1, 1, 1, 1 };
-	public final static long[] VMRAM = { 870l * 1024 * 1024, 1740l * 1024 * 1024, 1740l * 1024 * 1024,
-			613l * 1024 * 1024 };
+	public final static long[] VMRAM = { 870l , 1740l , 1740l ,
+			613l };
 	public final static int VMBW = 100000; // 100 Mbit/s
 	public final static long VMStorage = 2500l * 1024 * 1024; // 2.5 GB
 

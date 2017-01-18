@@ -1,9 +1,15 @@
 package com.paluno.clemens;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.paluno.clemens.power.CustomPowerTransitionGenerator;
@@ -18,22 +24,25 @@ import hu.mta.sztaki.lpds.cloud.simulator.energy.specialized.IaaSEnergyMeter;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.PowerStateKind;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.ResourceAllocation;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.State;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ConstantConstraints;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.constraints.ResourceConstraints;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.MultiPMController;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ConsumptionEventAdapter;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.resourcemodel.ResourceConsumption;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.pmscheduling.AlwaysOnMachines;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 import hu.mta.sztaki.lpds.cloud.simulator.io.Repository;
 import hu.mta.sztaki.lpds.cloud.simulator.io.VirtualAppliance;
+import hu.mta.sztaki.lpds.cloud.simulator.util.SeedSyncer;
 
 public class Simulation {
 	private Logger log = Logger.getLogger("Simulation");
 	private final int vmTypes = Constants.VMTYPES;
+	public static List<DataVM> dataVMs = new LinkedList<DataVM>();
+	private File[] inputFiles;
+
+	private final static HashMap<String, Integer> globalLatencyMapInternal = new HashMap<String, Integer>(10000);
+	public final static Map<String, Integer> globalLatencyMap = Collections.unmodifiableMap(globalLatencyMapInternal);
 
 	public static void main(String[] args) {
 		Simulation s = new Simulation();
@@ -41,7 +50,7 @@ public class Simulation {
 			s.startSimulation();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException | NoSuchFieldException | VMManagementException
-				| NetworkException e) {
+				| NetworkException | IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println("Something went wrong");
 			e.printStackTrace();
@@ -50,6 +59,10 @@ public class Simulation {
 	}
 
 	private int repoID = 0;
+	public IaaSService iaas;
+	public Repository repo;
+	public VirtualAppliance va;
+	public ResourceConstraints[] rc;
 
 	/**
 	 * Call this to start the simulation
@@ -63,48 +76,53 @@ public class Simulation {
 	 * @throws NoSuchFieldException
 	 * @throws NetworkException
 	 * @throws VMManagementException
+	 * @throws IOException
 	 */
-	public void startSimulation()
-			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
-			NoSuchMethodException, SecurityException, NoSuchFieldException, VMManagementException, NetworkException {
+	public void startSimulation() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, NoSuchMethodException, SecurityException, NoSuchFieldException,
+			VMManagementException, NetworkException, IOException {
 
 		reset();
-		IaaSService s = createIaaS(true);
-		EnergyMeter em = new IaaSEnergyMeter(s);
+		iaas = createIaaS(true);
+		EnergyMeter em = new IaaSEnergyMeter(iaas);
 		// em.startMeter(5, false);
 		ArrayList<PhysicalMachine> pms = createMultiplePMs(Constants.PMcount);
-		s.bulkHostRegistration(pms);
-		s.registerRepository(createRepo(true));
+		iaas.bulkHostRegistration(pms);
+		iaas.registerRepository(createRepo(true));
 		Timed.simulateUntilLastEvent();
-		Repository r = s.repositories.get(0);
-		VirtualAppliance va = (VirtualAppliance) r.contents().iterator().next();
-		ResourceConstraints[] rc = createConstraints(vmTypes);
-		VirtualMachine[] vms = requestVMs(va, rc, r, s, Constants.VMcount);
-		Timed.simulateUntilLastEvent();
-		for (PhysicalMachine pm : s.machines) {
-			ResourceConsumption cons = new ResourceConsumption(10, 1000, pm.directConsumer, pm,
-					new ConsumptionEventAdapter());
-			cons.registerConsumption();
-		}
-		for (PhysicalMachine pm : s.machines)
+		repo = iaas.repositories.get(0);
+		va = (VirtualAppliance) repo.contents().iterator().next();
+		rc = createConstraints(vmTypes);
+		VirtualMachine[] vms = requestVMs(va, rc, repo, iaas, Constants.VMcount);
+
+		for (VirtualMachine vm : vms)
+			System.out.println(vm);
+		for (PhysicalMachine pm : iaas.machines)
 			for (VirtualMachine vm : pm.listVMs()) {
-				vm.newComputeTask(10, ResourceConsumption.unlimitedProcessing, new ConsumptionEventAdapter() {
-					@Override
-					public void conComplete() {
-						log.info(vm + " completed task");
-						super.conComplete();
-					}
-				});
-				Timed.simulateUntilLastEvent();
+
+				// vm.newComputeTask(75 * 5 * 60, 75, new
+				// ConsumptionEventAdapter());
+
 			}
-		
-		Timed.simulateUntilLastEvent();
-		for (VirtualMachine vm : vms) {
-			vm.destroy(true);
-		}
+
 		Timed.simulateUntilLastEvent();
 
+		printResults(iaas);
 		log.info("Simulation finished in " + Timed.getFireCount() + " ticks");
+
+	}
+
+	private void printResults(IaaSService s) {
+		int pmCounter = 0, vmCounter = 0;
+		for (PhysicalMachine pm : s.machines) {
+			if (pm.isRunning())
+				pmCounter++;
+			for (VirtualMachine vm : pm.listVMs()) {
+				if (vm.getState().equals(VirtualMachine.State.RUNNING))
+					vmCounter++;
+			}
+		}
+		System.out.println(pmCounter + " running pms with a total of " + vmCounter + " running vms on them");
 
 	}
 
@@ -116,15 +134,22 @@ public class Simulation {
 	 * @return
 	 * @throws VMManagementException
 	 * @throws NetworkException
+	 * @throws IOException
+	 * @throws NumberFormatException
 	 */
 	public VirtualMachine[] requestVMs(VirtualAppliance virtualAppliance, ResourceConstraints[] resourceConstraints,
-			Repository repository, IaaSService iaas, int count) throws VMManagementException, NetworkException {
+			Repository repository, IaaSService iaas, int count)
+			throws VMManagementException, NetworkException, NumberFormatException, IOException {
 		VirtualMachine[] out = new VirtualMachine[count];
+		int compare = 0;
 		for (int i = 0; i < out.length; i++) {
 			// System.out.println("Currently requesting VM No. "+i);
+			compare++;
 			out[i] = iaas.requestVM(virtualAppliance, resourceConstraints[i % vmTypes], repository, 1)[0];
-			Timed.simulateUntilLastEvent();
+			dataVMs.add(new DataVM(out[i], loadFiles(Constants.inputfolder)[i].getAbsolutePath()));
+
 		}
+		System.out.println("Created " + compare + " VMs but should create " + count);
 		return out;
 	}
 
@@ -145,7 +170,7 @@ public class Simulation {
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		log.info("Creates IaaS");
 		return new IaaSService(flag == true ? BeloglazovScheduler.class : GuazzoneScheduler.class,
-				MultiPMController.class);
+				AlwaysOnMachines.class);
 	}
 
 	/**
@@ -176,10 +201,11 @@ public class Simulation {
 	 * @param powerTransitions
 	 * @return
 	 */
-	public PhysicalMachine createPM(double perCoreProcessing,
+	public PhysicalMachine createPM(String names, double perCoreProcessing,
 			EnumMap<PowerStateKind, EnumMap<State, PowerState>> powerTransitions) {
 		// log.info("Creates PM");
-		return new PhysicalMachine(Constants.PMCores, perCoreProcessing, Constants.PMram, createRepo(false), 0, 0,
+		return new PhysicalMachine(Constants.PMCores, perCoreProcessing, Constants.PMram,
+				new Repository(1024l * 1024 * 1024 * 1024, names, 1, 1, 1, globalLatencyMapInternal), 0, 0,
 				powerTransitions);
 	}
 
@@ -188,13 +214,15 @@ public class Simulation {
 	 * 
 	 * @param withVA
 	 *            if an Virtual Appliance is needed
+	 * @param pm
 	 * @return
 	 */
 	public Repository createRepo(boolean withVA) {
 		// log.info("Creates Repository " + (withVA == true ? "with Virtual
 		// Appliance" : "without Virtual Appliance"));
-		Repository out = new Repository(Constants.PMStorage, "R-" + repoID++, 1L * 1024, 1L * 1024, 1024L * 1024 * 1024,
-				null);
+
+		Repository out = new Repository(Constants.PMStorage, "R" + repoID++, 1L * 1024, 1L * 1024, 1024L * 1024 * 1024,
+				globalLatencyMapInternal);
 		if (withVA) {
 			VirtualAppliance va = new VirtualAppliance("VA", 0, 0, false, 1L * 1024);
 			out.registerObject(va);
@@ -215,14 +243,42 @@ public class Simulation {
 	private ArrayList<PhysicalMachine> createMultiplePMs(int count)
 			throws SecurityException, InstantiationException, IllegalAccessException, NoSuchFieldException {
 		ArrayList<PhysicalMachine> pms = new ArrayList<PhysicalMachine>();
+		String names[] = generateNames(count, "PM", 0);
 		for (int i = 0; i < count; i++) {
-			pms.add(createPM(Constants.PMMips[i % 2],
+			pms.add(createPM(names[i], Constants.PMMips[i % 2],
 					CustomPowerTransitionGenerator.generateTransitions(0,
 							((PowerConsuming) Constants.models[i % 2]).idlePower(),
 							((PowerConsuming) Constants.models[i % 2]).maxPower(), Double.MAX_VALUE, Double.MAX_VALUE,
 							Constants.models[i % 2].getClass())));
 		}
 		return pms;
+	}
+
+	/**
+	 * Generates names as identifiers for latency map
+	 * 
+	 * @param count
+	 *            number of names to generate
+	 * @param prefix
+	 *            the type this names should be of i.e. PM-001
+	 * @param latency
+	 *            latency for the map
+	 * @return Array with generated names
+	 */
+	public String[] generateNames(final int count, final String prefix, final int latency) {
+		final byte[] seed = new byte[4 * count];
+		SeedSyncer.centralRnd.nextBytes(seed);
+		final String[] names = new String[count];
+		for (int i = 0; i < count; i++) {
+			final int mult = i * 4;
+			names[i] = prefix + seed[mult] + seed[mult + 1] + seed[mult + 2] + seed[mult + 3];
+			globalLatencyMapInternal.put(names[i], latency);
+		}
+		return names;
+	}
+
+	public String generateName(final String prefix, final int latency) {
+		return generateNames(1, prefix, latency)[0];
 	}
 
 	/**
@@ -237,4 +293,10 @@ public class Simulation {
 	private void simulate() {
 		Timed.simulateUntilLastEvent();
 	}
+
+	public File[] loadFiles(String inputPath) {
+		return inputFiles != null ? inputFiles : (inputFiles = new File(inputPath).listFiles());
+
+	}
+
 }

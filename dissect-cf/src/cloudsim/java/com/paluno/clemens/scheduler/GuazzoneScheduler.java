@@ -2,11 +2,14 @@ package com.paluno.clemens.scheduler;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
-import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 
@@ -18,26 +21,25 @@ public class GuazzoneScheduler extends BeloglazovScheduler {
 	}
 
 	@Override
-	protected void getNewVMPlacement(List<VirtualMachine> vmsToMigrate, List<PhysicalMachine> pmsToFree,
-			List<PhysicalMachine> totalPms) {
+	protected List<Map<String, Object>> getNewVMPlacement(List<? extends VirtualMachine> vmsToMigrate,
+			Set<PhysicalMachine> pmsToFree) throws NetworkException {
+		List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
 		Collections.sort(vmsToMigrate, vmComp);
 		for (VirtualMachine vm : vmsToMigrate) {
-			PhysicalMachine allocated = findHostForVM(vm, totalPms, pmsToFree);
-			if (allocated != null) {
-				try {
-					vm.getResourceAllocation().getHost().migrateVM(vm, allocated);
-				} catch (VMManagementException | NetworkException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			PhysicalMachine allocatedHost = findHostForVM(vm, pmsToFree);
+			if (allocatedHost != null) {
+				Map<String, Object> migrate = new HashMap<String, Object>();
+				migrate.put("vm", vm);
+				migrate.put("host", allocatedHost);
+				migrationMap.add(migrate);
 			}
 		}
-
+		return migrationMap;
 	}
 
 	@Override
-	protected PhysicalMachine findHostForVM(VirtualMachine vm, List<PhysicalMachine> totalPms,
-			List<PhysicalMachine> pmsToFree) {
+	protected PhysicalMachine findHostForVM(VirtualMachine vm, Set<? extends PhysicalMachine> pmsToFree)
+			throws NetworkException {
 		List<PhysicalMachine> lph = getPmList();
 		Collections.sort(lph, pmComp);
 		for (PhysicalMachine pm : lph) {
