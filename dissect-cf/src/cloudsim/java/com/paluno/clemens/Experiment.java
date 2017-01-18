@@ -107,7 +107,7 @@ public class Experiment {
 	public IaaSService setupIaaS() throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchMethodException, SecurityException {
 		return new IaaSService((scheduler ? BeloglazovScheduler.class : GuazzoneScheduler.class),
-				SchedulingDependentMachines.class);
+				AlwaysOnMachines.class);
 	}
 
 	/** returns a new pm with constant number of cores and constant ram **/
@@ -240,7 +240,7 @@ public class Experiment {
 
 	public static void main(String[] args) {
 		try {
-			new Experiment(true).startSimulation();
+			new Experiment(false).startSimulation();
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException | NoSuchFieldException | VMManagementException
 				| NetworkException | IOException e) {
@@ -250,7 +250,7 @@ public class Experiment {
 	}
 
 	private class AllocationOptimizer extends Timed {
-		long setFreq = 5 * 60;// 1 tick = 1 second
+		long setFreq = 5 * 6000;// 1 tick = 1 second
 		IaaSService observe;
 		int count = 0;
 
@@ -259,6 +259,8 @@ public class Experiment {
 			if (observe.sched instanceof BeloglazovScheduler) {
 				System.out.println("Currently allocating at " + count);
 				((BeloglazovScheduler) observe.sched).optimizeAllocation(count++);
+				
+//				Timed.simulateUntilLastEvent();
 				if (count >= 289)
 					cancel();
 			}
@@ -270,7 +272,7 @@ public class Experiment {
 		}
 
 		public AllocationOptimizer(IaaSService iaas) {
-			if (subscribe(1))
+			if (subscribe(setFreq))
 				System.out.println("Successfully registered subscribtion");
 			;
 			this.observe = iaas;

@@ -11,6 +11,8 @@ import java.util.Set;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.IaaSService;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine;
 import hu.mta.sztaki.lpds.cloud.simulator.iaas.VirtualMachine;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.PhysicalMachine.ResourceAllocation;
+import hu.mta.sztaki.lpds.cloud.simulator.iaas.VMManager.VMManagementException;
 import hu.mta.sztaki.lpds.cloud.simulator.io.NetworkNode.NetworkException;
 
 public class GuazzoneScheduler extends BeloglazovScheduler {
@@ -21,26 +23,30 @@ public class GuazzoneScheduler extends BeloglazovScheduler {
 	}
 
 	@Override
-	protected List<Map<String, Object>> getNewVMPlacement(List<? extends VirtualMachine> vmsToMigrate,
-			Set<PhysicalMachine> pmsToFree) throws NetworkException {
-		List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
+	protected List<PhysicalMachine> getNewVMPlacement(List<? extends VirtualMachine> vmsToMigrate,
+			List<PhysicalMachine> pmsToFree) throws NetworkException, VMManagementException {
+		List<PhysicalMachine> targets = new LinkedList<PhysicalMachine>();
 		Collections.sort(vmsToMigrate, vmComp);
 		for (VirtualMachine vm : vmsToMigrate) {
 			PhysicalMachine allocatedHost = findHostForVM(vm, pmsToFree);
 			if (allocatedHost != null) {
-				Map<String, Object> migrate = new HashMap<String, Object>();
-				migrate.put("vm", vm);
-				migrate.put("host", allocatedHost);
-				migrationMap.add(migrate);
+				targets.add(allocatedHost);
+				ResourceAllocation alloc = allocatedHost.allocateResources(vm.getResourceAllocation().allocated, false,
+						PhysicalMachine.migrationAllocLen);
+				if (alloc != null) {
+					vm.migrate(alloc);
+					migrationCounter++;
+				}
 			}
 		}
-		return migrationMap;
+		return targets;
 	}
 
 	@Override
-	protected PhysicalMachine findHostForVM(VirtualMachine vm, Set<? extends PhysicalMachine> pmsToFree)
+	protected PhysicalMachine findHostForVM(VirtualMachine vm, List<PhysicalMachine> pmsToFree)
 			throws NetworkException {
-		List<PhysicalMachine> lph = getPmList();
+		List<PhysicalMachine> lph = new LinkedList<PhysicalMachine>(getPmList());
+
 		Collections.sort(lph, pmComp);
 		for (PhysicalMachine pm : lph) {
 			if (pmsToFree.contains(pm))
